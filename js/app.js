@@ -8,7 +8,6 @@ var main = function () {
 	$("main .authorization").append($butDestroy);
 	$("main .authorization").append($butLogin);
 	$("main .authorization").append($butRegister);
-
 };
 
 $(document).ready(function() {
