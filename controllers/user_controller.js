@@ -19,7 +19,12 @@ UsersController.show = function(req, res) {
 	if (err) {
 		console.log(err);
 	} else if (result.length !== 0) {
-		res.sendfile('./client/auth.html');
+		if(res.mode === "admin"){
+			res.sendfile('./client/admin.html');
+		}
+		else if(res.mode === "person"){
+			res.sendfile('./client/person.html');
+		}
 	} else {
 	  res.send(404);
 	}
@@ -29,7 +34,8 @@ UsersController.show = function(req, res) {
 // Создать нового пользователя 
 UsersController.create = function(req, res) {
 	console.log('Вызвано действие: создать пользователя');
-	var username = req.body.username; 
+	var username = req.body.username,
+	mode = req.body.mode;
 	// console.log(username);
 	User.find({"username": username}, function (err, result) {
 	    if (err) {
@@ -41,7 +47,8 @@ UsersController.create = function(req, res) {
 	        console.log("Пользователь уже существует"); 
 	    } else {
 	        var newUser = new User({
-	            "username": username
+	            "username": username,
+				"mode":mode
 	        });
 	        newUser.save(function(err, result) {
 	            console.log(err); 
@@ -61,18 +68,13 @@ UsersController.update = function (req, res) {
 	console.log("Вызвано действие: обновить пользователя");
 	var username = req.params.username;
 	console.log("Старое имя пользователя: " + username);
-	var newUsername = {$set: {username: req.body.username}};
+	var newUsername = {$set: {username: req.body.username,mode:req.body.mode}};
 	console.log("Новое имя пользователя: " + req.body.username);
 	User.updateOne({"username": username}, newUsername, function (err,user) {
 		if (err !== null) {
 			res.status(500).json(err);
 		} else {
-			if (user.n === 1 && user.nModified === 1 && user.ok === 1) {
-				console.log('Изменен');
-				res.status(200).json(user);
-			} else {
-				res.status(404);
-			}
+			res.json(200);
 		}
 	});
 };
@@ -91,11 +93,7 @@ UsersController.destroy = function (req, res) {
 					if (err !== null) {
 						res.status(500).json(err);
 					} else {
-						if (user.n === 1 && user.ok === 1 && user.deletedCount === 1) {
-							res.status(200).json(user);
-						} else {
-							res.status(404).json({"status": 404});
-						}
+						res.json(200);
 					}
 				});
         } else {
